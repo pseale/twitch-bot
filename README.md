@@ -1,6 +1,8 @@
-# Dead-Simple Twitch Bot skeleton in .NET 8
+# Simple Twitch Bot skeleton in .NET 8
 
-This is a minimal twitch bot with logging and error handling. It currently connects to one channel and logs chat messages to the console.
+This is an **absolutely minimal** twitch bot with logging and error handling. It currently connects to one channel and logs chat messages to the console.
+
+The twitch bot serves as an example for how to set up TwitchLib, the Twitch CLI, and Twitch user access tokens. It does nothing useful by itself.
 
 # Installation
 
