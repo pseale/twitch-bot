@@ -45,14 +45,18 @@ public class Worker(ILogger<Worker> logger, IConfiguration configuration) : Back
         client.OnConnectionError += (_, errorArgs) =>
         {
             fatalErrorMessage = errorArgs.Error.Message;
-            logger.LogError("TwitchLib connection error: " + fatalErrorMessage);
+            logger.LogCritical("TwitchLib connection error: " + fatalErrorMessage);
         };
         client.OnError += (_, errorArgs) =>
         {
             fatalErrorMessage = errorArgs.Exception.ToString();
-            logger.LogError("TwitchLib connection error: " + fatalErrorMessage);
+            logger.LogCritical("TwitchLib error: " + fatalErrorMessage);
         };
-        client.OnDisconnected += (_, _) => fatalErrorMessage = "Disconnected";
+        client.OnDisconnected += (_, _) =>
+        {
+            fatalErrorMessage = "Disconnected from channel.";
+            logger.LogCritical(fatalErrorMessage);
+        };
         client.OnLog += (_, logArgs) =>
         {
             if (logArgs.Data.Contains("PONG"))
