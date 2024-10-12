@@ -6,19 +6,19 @@ using TwitchLib.Communication.Models;
 
 namespace TwitchBot.WorkerService;
 
-public class Worker(ILogger<Worker> logger) : BackgroundService
+public class Worker(ILogger<Worker> logger, IConfiguration configuration) : BackgroundService
 {
     protected override async Task ExecuteAsync(CancellationToken stoppingToken)
     {
-        var twitchBotUsername = Environment.GetEnvironmentVariable("TWITCH_BOT_USERNAME");
+        var twitchBotUsername = configuration["TWITCH_BOT_USERNAME"];
         if (string.IsNullOrWhiteSpace(twitchBotUsername))
             throw new Exception("TWITCH_BOT_USERNAME environment variable is missing");
 
-        var twitchChannel = Environment.GetEnvironmentVariable("TWITCH_CHANNEL");
+        var twitchChannel = configuration["TWITCH_CHANNEL"];
         if (string.IsNullOrWhiteSpace(twitchBotUsername))
             throw new Exception("TWITCH_CHANNEL environment variable is missing");
 
-        var userAccessToken = Environment.GetEnvironmentVariable("TWITCH_USER_ACCESS_TOKEN");
+        var userAccessToken = configuration["TWITCH_USER_ACCESS_TOKEN"];
         if (string.IsNullOrWhiteSpace(userAccessToken))
             throw new Exception("TWITCH_USER_ACCESS_TOKEN environment variable is missing");
 
