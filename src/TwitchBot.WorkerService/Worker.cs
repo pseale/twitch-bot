@@ -16,11 +16,11 @@ public class Worker(ILogger<Worker> logger, IConfiguration configuration) : Back
 
         var twitchChannel = configuration["TWITCH_CHANNEL"];
         if (string.IsNullOrWhiteSpace(twitchBotUsername))
-            throw new Exception("TWITCH_CHANNEL environment variable is missing");
+            throw new Exception("TWITCH_CHANNEL configuration variable is missing");
 
         var userAccessToken = configuration["TWITCH_USER_ACCESS_TOKEN"];
         if (string.IsNullOrWhiteSpace(userAccessToken))
-            throw new Exception("TWITCH_USER_ACCESS_TOKEN environment variable is missing");
+            throw new Exception("TWITCH_USER_ACCESS_TOKEN configuration variable is missing");
 
         var credentials = new ConnectionCredentials(twitchBotUsername, userAccessToken);
         var clientOptions = new ClientOptions
