@@ -32,7 +32,7 @@ public class Worker(ILogger<Worker> logger, IConfiguration configuration) : Back
         var client = new TwitchClient(customClient);
         client.Initialize(credentials, twitchChannel);
 
-        async void OnClientOnOnJoinedChannel(object? _, OnJoinedChannelArgs e)
+        void OnClientOnOnJoinedChannel(object? _, OnJoinedChannelArgs e)
         {
             logger.LogInformation("TwitchLib: joined channel: " + e.Channel + " " + e.BotUsername);
         }
