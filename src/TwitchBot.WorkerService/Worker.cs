@@ -32,16 +32,10 @@ public class Worker(ILogger<Worker> logger, IConfiguration configuration) : Back
         var client = new TwitchClient(customClient);
         client.Initialize(credentials, twitchChannel);
 
-        void OnClientOnOnJoinedChannel(object? _, OnJoinedChannelArgs e)
-        {
-            logger.LogInformation("TwitchLib: joined channel: " + e.Channel + " " + e.BotUsername);
-        }
-
         var fatalErrorMessage = "";
 
-        client.OnJoinedChannel += OnClientOnOnJoinedChannel;
-        client.OnMessageReceived += (_, receivedArgs) =>
-            logger.LogDebug("TwitchLib message received: " + receivedArgs.ChatMessage.Message);
+        client.OnJoinedChannel += (_, e) => logger.LogInformation("TwitchLib: joined channel:" + e.Channel + " username:" + e.BotUsername);
+        client.OnMessageReceived += (_, receivedArgs) => logger.LogInformation("[CHAT] " + receivedArgs.ChatMessage.DisplayName + ": " + receivedArgs.ChatMessage.Message);
         client.OnConnectionError += (_, errorArgs) =>
         {
             fatalErrorMessage = errorArgs.Error.Message;
@@ -59,10 +53,14 @@ public class Worker(ILogger<Worker> logger, IConfiguration configuration) : Back
         };
         client.OnLog += (_, logArgs) =>
         {
-            if (logArgs.Data.Contains("PONG"))
-                logger.LogTrace("TwitchLib log message: " + logArgs.Data);
+            if (logArgs.Data.StartsWith("Received: PONG"))
+            {
+                logger.LogTrace("TwitchLib log message: " + logArgs.Data); // logging this noisy (useless) log as Trace
+            }
             else
+            {
                 logger.LogDebug("TwitchLib log message: " + logArgs.Data);
+            }
         };
 
         client.Connect();
