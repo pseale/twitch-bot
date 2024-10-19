@@ -35,7 +35,6 @@ public class Worker(ILogger<Worker> logger, IConfiguration configuration) : Back
         var fatalErrorMessage = "";
 
         client.OnJoinedChannel += (_, e) => logger.LogInformation("TwitchLib: joined channel:" + e.Channel + " username:" + e.BotUsername);
-        client.OnMessageReceived += (_, receivedArgs) => logger.LogInformation("[CHAT] " + receivedArgs.ChatMessage.DisplayName + ": " + receivedArgs.ChatMessage.Message);
         client.OnConnectionError += (_, errorArgs) =>
         {
             fatalErrorMessage = errorArgs.Error.Message;
@@ -62,6 +61,11 @@ public class Worker(ILogger<Worker> logger, IConfiguration configuration) : Back
                 logger.LogDebug("TwitchLib log message: " + logArgs.Data);
             }
         };
+
+        // ----------- START HERE -----------
+        // OnMessageReceived processes messages from chat - this is where you begin implementing your chatbot
+        client.OnMessageReceived += (_, receivedArgs) => logger.LogInformation("[CHAT] " + receivedArgs.ChatMessage.DisplayName + ": " + receivedArgs.ChatMessage.Message);
+        // ----------------------------------
 
         client.Connect();
 
