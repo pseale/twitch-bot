@@ -52,9 +52,9 @@ public class Worker(ILogger<Worker> logger, IConfiguration configuration) : Back
         };
         client.OnLog += (_, logArgs) =>
         {
-            if (logArgs.Data.StartsWith("Received: PONG"))
+            if (logArgs.Data.StartsWith("Received: PING") || logArgs.Data.StartsWith("Writing: PONG"))
             {
-                logger.LogTrace("TwitchLib log message: " + logArgs.Data); // logging this noisy (useless) log as Trace
+                logger.LogTrace("TwitchLib log message: " + logArgs.Data); // logging these noisy (useless) logs as Trace
             }
             else
             {
