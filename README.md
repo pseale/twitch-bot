@@ -16,7 +16,7 @@ The twitch bot serves as an example for how to set up TwitchLib, the Twitch CLI,
 4. Store a twitch user authentication token in the environment variable `TWITCH_USER_ACCESS_TOKEN` using one of two options:
     - Do it manually
     - Run `./scripts/Get-TwitchToken.ps1`
-5. Run
+5. Run the bot:
     ``` PowerShell
     cd ./src/TwitchBot.Worker
     dotnet run
@@ -25,5 +25,5 @@ The twitch bot serves as an example for how to set up TwitchLib, the Twitch CLI,
 # Notes
 
 - This has not been fully tested. Notably, I have never seen a `Disconnected` event or an `Error` event.
-- The Twitch user authentication token does not refresh itself, and needs to be refreshed regularly.
+- The Twitch user authentication token does not refresh itself, and presumably needs to be refreshed regularly.
 
