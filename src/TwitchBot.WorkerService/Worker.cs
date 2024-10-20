@@ -6,7 +6,7 @@ using TwitchLib.Communication.Models;
 
 namespace TwitchBot.WorkerService;
 
-public class Worker(ILogger<Worker> logger, IConfiguration configuration) : BackgroundService
+public class Worker(IHostApplicationLifetime hostApplicationLifetime, ILogger<Worker> logger, IConfiguration configuration) : BackgroundService
 {
     protected override async Task ExecuteAsync(CancellationToken stoppingToken)
     {
@@ -32,48 +32,40 @@ public class Worker(ILogger<Worker> logger, IConfiguration configuration) : Back
         var client = new TwitchClient(customClient);
         client.Initialize(credentials, twitchChannel);
 
-        var fatalErrorMessage = "";
 
-        client.OnJoinedChannel += (_, e) => logger.LogInformation("TwitchLib: joined channel:" + e.Channel + " username:" + e.BotUsername);
-        client.OnConnectionError += (_, errorArgs) =>
-        {
-            fatalErrorMessage = errorArgs.Error.Message;
-            logger.LogCritical("TwitchLib connection error: " + fatalErrorMessage);
-        };
-        client.OnError += (_, errorArgs) =>
-        {
-            fatalErrorMessage = errorArgs.Exception.ToString();
-            logger.LogCritical("TwitchLib error: " + fatalErrorMessage);
-        };
-        client.OnDisconnected += (_, _) =>
-        {
-            fatalErrorMessage = "Disconnected from channel.";
-            logger.LogCritical(fatalErrorMessage);
-        };
+        client.OnJoinedChannel += (_, e) => logger.LogInformation("TwitchLib: joined channel:{Channel} username:{BotUsername}", e.Channel, e.BotUsername);
         client.OnLog += (_, logArgs) =>
         {
-            if (logArgs.Data.StartsWith("Received: PING") || logArgs.Data.StartsWith("Writing: PONG"))
+            if (logArgs.Data.StartsWith("Received: PING") || logArgs.Data.StartsWith("Received: PONG") || logArgs.Data.StartsWith("Writing: PONG"))
             {
-                logger.LogTrace("TwitchLib log message: " + logArgs.Data); // logging these noisy (useless) logs as Trace
+                logger.LogTrace("TwitchLib log message: {Data}", logArgs.Data); // logging these noisy (useless) logs as Trace
             }
             else
             {
-                logger.LogDebug("TwitchLib log message: " + logArgs.Data);
+                logger.LogDebug("TwitchLib log message: {Data}", logArgs.Data);
             }
         };
+        client.OnConnectionError +=  (_, errorArgs) =>  GracefullyTerminate(errorArgs.Error.Message);
+        client.OnError +=  (_, errorArgs) =>  GracefullyTerminate("TwitchLib error: {Exception}", errorArgs.Exception);
+        client.OnDisconnected +=  (_, _) =>  logger.LogInformation("Disconnected from channel.");
+        client.OnIncorrectLogin +=  (_, args) =>  GracefullyTerminate("Login failure: {Exception}", args.Exception);
+
 
         // ----------- START HERE -----------
         // OnMessageReceived processes messages from chat - this is where you begin implementing your chatbot
-        client.OnMessageReceived += (_, receivedArgs) => logger.LogInformation("[CHAT] " + receivedArgs.ChatMessage.DisplayName + ": " + receivedArgs.ChatMessage.Message);
+        client.OnMessageReceived += (_, receivedArgs) => logger.LogInformation("[CHAT] {DisplayName}: {Message} ", receivedArgs.ChatMessage.DisplayName, receivedArgs.ChatMessage.Message);
         // ----------------------------------
 
         client.Connect();
 
         while (!stoppingToken.IsCancellationRequested)
         {
-            if (!string.IsNullOrWhiteSpace(fatalErrorMessage))
-                break;
             await Task.Delay(1000, stoppingToken);
         }
+    }
+    private void GracefullyTerminate(string message, params object?[] messageArgs)
+    {
+        logger.LogCritical(message, messageArgs);
+        hostApplicationLifetime.StopApplication(); // https://stackoverflow.com/a/59503361
     }
 }
